@@ -1,10 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Site 2.0 Coming Soon</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stephen's Apps</title>
+  <meta name="description" content="A collection of Stephen B's apps — StikDebug, StikBridge beta, and more." />
+  <meta name="theme-color" content="#0E1218">
+  <link rel="preconnect" href="https://stikdebug.xyz" crossorigin>
+  <style>
+    :root{
+      --bg: #0E1218;           /* solid site background */
+      --panel: #141b22;        /* solid cards */
+      --panel-2: #10171e;      /* alt panel */
+      --stroke: rgba(255,255,255,0.08);
+      --shadow: rgba(0,0,0,0.28);
+      --tint: #293B45;
+      --fg: #ffffff;
+      --fg-muted: rgba(255,255,255,0.72);
+      --chip-bg: rgba(255,255,255,0.08);
+      --chip-stroke: rgba(255,255,255,0.18);
+      --radius: 16px;
+      --gap: 14px;
+      --maxw: 1200px;
+
+      /* Responsive type scale */
+      --h1: clamp(22px, 4vw, 32px);
+      --h2: clamp(18px, 2.6vw, 22px);
+      --body: 16px;
+      --small: 14px;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      color: var(--fg);
+      background: var(--bg); /* SOLID */
+      font: var(--body)/1.5 ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      -webkit-text-size-adjust: 100%;
+      text-rendering: optimizeLegibility;
+    }
+
+    .page { min-height: 100%; display: grid; grid-template-rows: auto 1fr auto; }
+    .container { max-width: var(--maxw); margin: 0 auto; padding: 20px 16px; }
+    @media (min-width: 720px){ .container { padding: 28px 20px; } }
+
+    .card {
+      position: relative;
+      border-radius: var(--radius);
+      background: var(--panel);               /* SOLID panels */
+      border: 1px solid var(--stroke);
+      box-shadow: 0 8px 18px var(--shadow);
+    }
+    .card.alt { background: var(--panel-2); }
+    .card.pad { padding: 14px; }
+    @media (min-width: 720px){ .card.pad { padding: 18px; } }
+
+    .hero { display:flex; gap:16px; align-items:flex-start; flex-wrap: wrap; }
+    .hero-title { font-size: var(--h1); font-weight: 800; letter-spacing:.2px; margin:0; }
+    .hero-sub { color: var(--fg-muted); margin: 4px 0 0; font-weight: 600; }
+
+    .tags { display:flex; gap:8px; flex-wrap: wrap; margin-top: 10px; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; background: var(--chip-bg); border: 1px solid var(--chip-stroke); font-weight: 700; font-size: var(--small); }
+    .chip.beta { color: #ffd166; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap: wrap; margin-left: auto; }
+    .btn {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: var(--panel-2);
+      cursor: pointer;
+      color: var(--fg);
+      font-weight: 700; letter-spacing:.2px;
+      transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+      touch-action: manipulation;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+    .btn[aria-pressed="true"] { border-color: var(--tint); box-shadow: 0 0 0 2px color-mix(in oklab, var(--tint), transparent 70%); }
+
+    .grid { display:grid; gap: var(--gap); }
+    /* 1 col mobile → 2 cols tablet → 3 cols desktop */
+    .grid.apps { grid-template-columns: 1fr; }
+    @media (min-width: 700px){ .grid.apps { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width: 1040px){ .grid.apps { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+    .app-card { display:flex; flex-direction:column; gap:12px; }
+    .app-head { display:flex; gap:12px; align-items:center; }
+    .app-icon {
+      width:64px; height:64px; border-radius:14px; object-fit: cover; border: 1px solid var(--stroke);
+      flex: 0 0 auto;
+    }
+    .app-title { margin:0; font-size: clamp(16px, 1.8vw, 18px); font-weight: 800; }
+    .app-sub { margin:2px 0 0; color: var(--fg-muted); font-weight:600; font-size: var(--small); }
+
+    .kv { display:grid; grid-template-columns: 120px 1fr; gap: 6px 12px; }
+    @media (min-width: 720px){ .kv { grid-template-columns: 130px 1fr; } }
+    .kv .k { color: var(--fg-muted); }
+
+    .actions { display:flex; gap:8px; flex-wrap: wrap; }
+    .cta {
+      display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius: 12px; text-decoration:none;
+      color: var(--fg); border: 1px solid var(--stroke); background: var(--panel-2); font-weight: 800;
+      transition: transform .12s ease, background-color .12s ease;
+    }
+    .cta:hover { transform: translateY(-1px); }
+    .cta:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+
+    /* Screenshot rail: efficient + mobile-friendly */
+    .screens { display:grid; grid-auto-flow: column; gap: 10px; overflow-x:auto; padding-bottom:6px; scrollbar-width: thin; }
+    .screens img {
+      height: clamp(280px, 60vh, 420px);
+      width: auto;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      box-shadow: 0 8px 16px var(--shadow);
+      object-fit: cover;
+    }
+
+    .section-title { font-size: var(--h2); font-weight: 800; margin: 0 0 6px; }
+    .section-sub { margin: 0 0 14px; color: var(--fg-muted); font-weight: 600; }
+
+    header, footer { padding: 20px 0; }
+    footer { color: var(--fg-muted); font-weight:600; }
+
+    .muted { color: var(--fg-muted); }
+    .hidden { display:none; }
+    .divider { height:1px; background: var(--stroke); margin: 8px 0; }
+
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .cta { transition: none; }
+    }
+
+    /* Improve tap targets on small screens */
+    @media (max-width: 420px){
+      .btn, .cta { padding: 12px 14px; }
+      .app-icon { width:56px; height:56px; }
+      .kv { grid-template-columns: 100px 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Site 2.0 Coming Soon</h1>
+<div class="page">
+  <header class="container">
+    <div class="card pad">
+      <div class="hero">
+        <div style="flex:1 1 auto; min-width:260px;">
+          <h1 class="hero-title" id="siteTitle">Stephen's Apps</h1>
+          <p class="hero-sub" id="siteSubtitle">A collection of apps</p>
+          <div class="tags">
+            <span class="chip" id="siteUrl"></span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="filterFeatured" aria-pressed="true">Featured</button>
+          <button class="btn" id="filterAll" aria-pressed="false">All Apps</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="main">
+    <section id="featuredSection" class="card pad">
+      <h2 class="section-title">Featured</h2>
+      <p class="section-sub">Curated picks from Stephen’s toolkit.</p>
+      <div id="featuredGrid" class="grid apps" aria-live="polite"></div>
+    </section>
+
+    <div style="height:18px"></div>
+
+    <section id="allSection" class="card pad hidden">
+      <h2 class="section-title">All Apps</h2>
+      <p class="section-sub">Explore every app in the Stik ecosystem.</p>
+      <div id="appsGrid" class="grid apps"></div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <div class="card pad" style="text-align:center">
+      <div>© <span id="year"></span> Stephen B</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+const ENDPOINT = 'https://stikdebug.xyz/apps.json';
+let STATE = null;
+const $ = s => document.querySelector(s);
+
+function fmtBytes(b){
+  if(!b||b<=0) return "";
+  const u=["B","KB","MB","GB","TB"]; let i=0,v=b;
+  while(v>=1024 && i<u.length-1){ v/=1024; i++; }
+  return `${v.toFixed(i?1:0)} ${u[i]}`;
+}
+function isUpcoming(iso){ if(!iso) return false; return new Date(iso).getTime() > Date.now(); }
+
+function renderSite(){
+  const DATA = STATE; if(!DATA) return;
+  document.title = DATA.name || "Stephen's Apps";
+  $('#siteTitle').textContent = DATA.name || "Stephen's Apps";
+  $('#siteSubtitle').textContent = DATA.subtitle || '';
+  $('#siteUrl').textContent = (DATA.website||'').replace(/^https?:\/\//,'');
+  document.documentElement.style.setProperty('--tint', DATA.tintColor || '#293B45');
+  $('#year').textContent = new Date().getFullYear();
+
+  const byId = Object.fromEntries((DATA.apps||[]).map(a => [a.bundleIdentifier, a]));
+  const feat = document.getElementById('featuredGrid'); feat.innerHTML='';
+  (DATA.featuredApps||[]).forEach(id => { const a = byId[id]; if(a) feat.appendChild(renderAppCard(a)); });
+
+  const all = document.getElementById('appsGrid'); all.innerHTML='';
+  (DATA.apps||[]).forEach(a => all.appendChild(renderAppCard(a)));
+}
+
+function renderAppCard(app){
+  const v = (app.versions && app.versions[0]) || {};
+  const isBeta = !!app.beta || /beta/i.test(v.version||'') || /\.beta/.test(app.bundleIdentifier||'');
+  const upcoming = isUpcoming(v.date);
+
+  const wrap = document.createElement('article');
+  wrap.className = 'card pad app-card';
+  wrap.innerHTML = `
+    <div class="app-head">
+      <img class="app-icon" src="${app.iconURL}" alt="${app.name} icon" loading="lazy" decoding="async" />
+      <div style="flex:1 1 auto">
+        <h3 class="app-title">${app.name}</h3>
+        <p class="app-sub">${app.subtitle||''}</p>
+        <div class="tags">
+          ${isBeta?'<span class="chip beta">Beta</span>':''}
+          ${upcoming?`<span class="chip">Launches ${new Date(v.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`:''}
+          ${app.minOSVersion?`<span class="chip">iOS ${app.minOSVersion}+</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <div class="kv" style="margin-top:8px">
+      <div class="k">Version</div><div>${v.version||'—'}</div>
+      <div class="k">Updated</div><div>${v.date?new Date(v.date).toLocaleDateString():'—'}</div>
+      <div class="k">Build</div><div>${v.buildVersion||'—'}</div>
+      <div class="k">Size</div><div>${fmtBytes(v.size)||'—'}</div>
+    </div>
+    <div class="divider"></div>
+    <p class="muted" style="margin:0">${app.localizedDescription||''}</p>
+    <div class="screens" style="margin-top:10px">
+      ${(app.screenshots?.iphone||[])
+        .map(s=>`<img src="${s.imageURL}" alt="${app.name} screenshot" loading="lazy" decoding="async">`)
+        .join('')}
+    </div>
+    <div class="actions" style="margin-top:12px">
+      ${app.name==="StikDebug"
+        ? `<a class="cta" href="https://apps.apple.com/us/app/stikdebug/id6744045754" rel="noopener">App Store</a>`
+        : ``}
+    </div>`;
+  return wrap;
+}
+
+function setupInteractions(){
+  const featBtn=$('#filterFeatured'), allBtn=$('#filterAll');
+  const feat=$('#featuredSection'), all=$('#allSection');
+  function setMode(m){
+    const f = (m==='featured');
+    feat.classList.toggle('hidden', !f);
+    all.classList.toggle('hidden', f);
+    featBtn.setAttribute('aria-pressed', f?'true':'false');
+    allBtn.setAttribute('aria-pressed', f?'false':'true');
+    localStorage.setItem('mode', m);
+    document.getElementById('main').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  featBtn.onclick = () => setMode('featured');
+  allBtn.onclick = () => setMode('all');
+  setMode(localStorage.getItem('mode') || 'featured');
+}
+
+(async function(){
+  try{
+    const res = await fetch(ENDPOINT, { cache: 'no-cache' });
+    if(!res.ok) throw new Error(res.status);
+    STATE = await res.json();
+    renderSite();
+    setupInteractions();
+  }catch(e){
+    console.error(e);
+  }
+})();
+</script>
 </body>
 </html>
